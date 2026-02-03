@@ -6,7 +6,8 @@ export type NodeType=
 //EXPRESSIONS
 | "NumericLiteral"
 | "Identifier"
-| "BinaryExpr";
+| "BinaryExpr"
+| "AssignmentExpr";
   
 
 export interface Stmt{
@@ -42,6 +43,12 @@ export interface NumericLiteral extends Expr{
 export interface VarDeclaration extends Stmt{
     kind: "VarDeclaration";
     identifier: Identifier;
+    value?: Expr;
+}
+
+export interface AssignmentExpr extends Expr{
+    kind: "AssignmentExpr";
+    assigne: Expr;
     value: Expr;
 } 
 

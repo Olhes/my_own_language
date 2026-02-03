@@ -1,5 +1,5 @@
 import { MK_NULL, NumberVal, RuntimeVal } from "./values.ts";
-import { BinaryExpr, NumericLiteral, Program, Stmt, Identifier } from "../frontend/ast.ts";
+import { BinaryExpr, NumericLiteral, Program, Stmt, Identifier, VarDeclaration, AssignmentExpr } from "../frontend/ast.ts";
 import Environment from "./environments.ts"; // Asegúrate que la ruta sea correcta, si no, es 'environment.ts' sin la 's' al final
 
 
@@ -60,6 +60,20 @@ function eval_identifier(ident: Identifier, env: Environment): RuntimeVal {
   return val;
 }
 
+function eval_var_declaration(declaration: VarDeclaration, env: Environment): RuntimeVal {
+    const value = declaration.value ? evaluate(declaration.value, env) : MK_NULL();
+    return env.declareVar(declaration.identifier.symbol, value);
+}
+
+function eval_assignment(assignment: AssignmentExpr, env: Environment): RuntimeVal {
+    if (assignment.assigne.kind !== "Identifier") {
+        throw "Invalid assignment target. Must be an identifier.";
+    }
+    
+    const value = evaluate(assignment.value, env);
+    return env.assignVar((assignment.assigne as Identifier).symbol, value);
+}
+
 export function evaluate(astNode: Stmt, env: Environment): RuntimeVal { // AÑADIR 'env: Environment'
     switch (astNode.kind) {
         case "NumericLiteral":
@@ -79,6 +93,12 @@ export function evaluate(astNode: Stmt, env: Environment): RuntimeVal { // AÑAD
         
         case "Identifier":
             return eval_identifier(astNode as Identifier, env);
+            
+        case "VarDeclaration":
+            return eval_var_declaration(astNode as VarDeclaration, env);
+            
+        case "AssignmentExpr":
+            return eval_assignment(astNode as AssignmentExpr, env);
 
         default:
             console.error(

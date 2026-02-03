@@ -6,6 +6,7 @@ import{
     Program,
     Stmt,
     VarDeclaration,
+    AssignmentExpr,
 } from "./ast.ts";
 
 
@@ -59,27 +60,62 @@ export default class Parser{
         case TokenType.Const:
             return this.parse_var_declaration();
         default:
+            // Check for assignment (identifier = expression)
+            if (this.at().type == TokenType.Identifier && this.tokens.length > 1 && this.tokens[1].type == TokenType.Equals) {
+                return this.parse_assignment();
+            }
             return this.parse_expr()
      }
     }
 
-    //(CONST|LET) IDENT
     private parse_var_declaration(): Stmt{
         const isConstant= this.eat().type== TokenType.Const;
-        const identifier= this.expect(TokenType.Identifier, "Expected identifier name following let | const keywords.").value;
+        const identifier = {
+            kind: "Identifier",
+            symbol: this.expect(TokenType.Identifier, "Expected identifier name following let | const keywords.").value
+        } as Identifier;
         
         if(this.at().type==TokenType.Semicolon){
+            this.eat(); // Consume the semicolon
             if(isConstant){
-                throw "Must assigne value to constant expression. No value provided."
-            
-                return {
-                    kind: "VarDeclaration",
-                    identifier,
-                    constant: false,
-                    value:undefined
-                } as VarDeclaration;
+                throw "Must assign value to constant expression. No value provided.";
             }
+            
+            return {
+                kind: "VarDeclaration",
+                identifier,
+                constant: false,
+                value: undefined
+            } as VarDeclaration;
         }
+        
+        // Expect '=' for assignment
+        this.expect(TokenType.Equals, "Expected '=' token following variable declaration.");
+        
+        // Parse the assigned expression
+        const declaration = this.parse_expr();
+        
+        // Expect semicolon at the end
+        this.expect(TokenType.Semicolon, "Expected ';' at the end of variable declaration.");
+        
+        return {
+            kind: "VarDeclaration",
+            identifier,
+            constant: isConstant,
+            value: declaration
+        } as VarDeclaration;
+    }
+    
+    private parse_assignment(): Expr {
+        const assigne = this.parse_primary_expr();
+        this.expect(TokenType.Equals, "Expected '=' token following assignment expression.");
+        const value = this.parse_expr();
+        
+        return {
+            kind: "AssignmentExpr",
+            assigne,
+            value
+        } as AssignmentExpr;
     }
     
     private parse_expr():Expr{
