@@ -93,7 +93,14 @@ export default class Parser{
         this.expect(TokenType.Equals, "Expected '=' token following variable declaration.");
         
         // Parse the assigned expression
-        const declaration = this.parse_expr();
+        const declaration = {
+            kind: "VarDeclaration",
+            value: this.parse_expr(),
+            identifier,
+            constant: isConstant,
+
+        }as VarDeclaration;
+        
         
         // Expect semicolon at the end
         this.expect(TokenType.Semicolon, "Expected ';' at the end of variable declaration.");
@@ -102,7 +109,7 @@ export default class Parser{
             kind: "VarDeclaration",
             identifier,
             constant: isConstant,
-            value: declaration
+            value: declaration.value
         } as VarDeclaration;
     }
     
@@ -110,6 +117,11 @@ export default class Parser{
         const assigne = this.parse_primary_expr();
         this.expect(TokenType.Equals, "Expected '=' token following assignment expression.");
         const value = this.parse_expr();
+        
+        // Expect semicolon at the end for assignment statements
+        if (this.at().type == TokenType.Semicolon) {
+            this.eat();
+        }
         
         return {
             kind: "AssignmentExpr",

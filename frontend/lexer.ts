@@ -21,7 +21,7 @@ export enum TokenType{
 
 
 const KEYWORDS: Record<string,TokenType>={
-    let: TokenType.Keyword,
+    let: TokenType.Let,
     const: TokenType.Const,
 };
 
@@ -38,7 +38,7 @@ function token(value="",type: TokenType): Token{
 }
 
 function isalpha(src:string){
-    return src.toUpperCase()!=src.toLowerCase();
+    return src.toUpperCase()!=src.toLowerCase() || src == "_";
 }
 
 function isskippable(str:string){
