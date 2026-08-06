@@ -23,6 +23,13 @@ export interface Program extends Stmt{
 
 export interface Expr extends Stmt{}
 
+// Let x = {foo: "BaR"}
+export interface AssignmentExpr extends Expr{
+    kind: "AssignmentExpr";
+    assiggne:Expr;
+    value:Expr;;
+}
+
 export interface BinaryExpr extends Expr{
     kind: "BinaryExpr";
     left: Expr;
